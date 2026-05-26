@@ -576,16 +576,22 @@
     .playhead { position: absolute; top: 72px; bottom: 18px; left: 44%; width: 3px; border-radius: 3px; background: var(--mint); box-shadow: 0 0 28px rgba(5,223,114,0.86); }
 
     .scene-5 .chart-bg { position: absolute; inset: 0; }
-    .chart-line,
-    .chart-shadow {
-      stroke-dasharray: 1;
-      stroke-dashoffset: 0;
+    .chart-line {
+      stroke-dasharray: 1728;
+      stroke-dashoffset: 1728;
       will-change: stroke-dashoffset, opacity, transform;
     }
-    .chart-chase {
-      stroke-dasharray: 0.08 1;
+    .chart-shadow {
+      opacity: 0;
+      stroke-dasharray: 1728;
       stroke-dashoffset: 0;
-      will-change: stroke-dashoffset, opacity;
+      will-change: opacity, transform;
+    }
+    .chart-chase {
+      opacity: 0;
+      stroke-dasharray: 210 1728;
+      stroke-dashoffset: 1728;
+      will-change: stroke-dashoffset, opacity, transform;
     }
     .chart-dot,
     .chart-ring {
@@ -769,9 +775,9 @@
           <filter id="chartGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <linearGradient id="chartGrad" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#05df72" stop-opacity="0.08"/><stop offset="0.55" stop-color="#05df72"/><stop offset="1" stop-color="#8dffbf"/></linearGradient>
         </defs>
-        <path class="chart-shadow" pathLength="1" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="#05df72" stroke-opacity="0.16" stroke-width="30" stroke-linecap="round" filter="url(#chartGlow)"/>
-        <path class="chart-line" pathLength="1" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="url(#chartGrad)" stroke-width="12" stroke-linecap="round" filter="url(#chartGlow)"/>
-        <path class="chart-chase" pathLength="1" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="#eafff1" stroke-opacity="0.9" stroke-width="7" stroke-linecap="round"/>
+        <path class="chart-shadow" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="#05df72" stroke-opacity="0.16" stroke-width="30" stroke-linecap="round" filter="url(#chartGlow)"/>
+        <path class="chart-line" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="url(#chartGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="1728" stroke-dashoffset="1728" filter="url(#chartGlow)"/>
+        <path class="chart-chase" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="#eafff1" stroke-opacity="0.9" stroke-width="7" stroke-linecap="round" stroke-dasharray="210 1728" stroke-dashoffset="1728"/>
         <circle class="chart-ring" cx="1744" cy="224" r="32" fill="none" stroke="#8dffbf" stroke-width="5" filter="url(#chartGlow)"/>
         <circle class="chart-dot" cx="1744" cy="224" r="20" fill="#05df72" filter="url(#chartGlow)"/>
       </svg>
@@ -798,6 +804,13 @@
 
     const timeline = gsap.timeline({ paused: true });
     const f = (frame) => frame / 30;
+    const chartLine = document.querySelector('.scene-5 .chart-line');
+    const chartChase = document.querySelector('.scene-5 .chart-chase');
+    const chartState = { lineOffset: 1728, chaseOffset: 1728 };
+    const updateChartLine = () => chartLine?.setAttribute('stroke-dashoffset', chartState.lineOffset.toFixed(2));
+    const updateChartChase = () => chartChase?.setAttribute('stroke-dashoffset', chartState.chaseOffset.toFixed(2));
+    updateChartLine();
+    updateChartChase();
 
     timeline.to('#scene-1', { opacity: 1, duration: 3.19, ease: 'power1.out' }, f(0));
     timeline.from('.scene-1 .scan-grid', { opacity: 0, scale: 1.06, duration: 0.7, ease: 'power3.out' }, f(0));
@@ -856,12 +869,14 @@
     timeline.to('.scene-4 .copy, .scene-4 .editor', { opacity: 0, x: -86, duration: 0.34, ease: 'power2.in' }, f(500));
     timeline.to('#scene-4', { opacity: 0, duration: 0.01, ease: 'power1.in' }, f(510) - 0.01);
 
-    timeline.to('#scene-5', { opacity: 1, duration: 4.2, ease: 'power1.out' }, f(510));
+    timeline.set('#scene-5', { opacity: 1 }, f(510));
     timeline.from('.scene-5 .dot-field', { opacity: 0, y: 30, duration: 0.68, ease: 'power3.out' }, f(512));
     timeline.from('.scene-5 .chart-bg', { opacity: 0, duration: 0.32, ease: 'power3.out' }, f(518));
-    timeline.from('.scene-5 .chart-line, .scene-5 .chart-shadow', { strokeDashoffset: 1, duration: 0.92, ease: 'power3.inOut' }, f(522));
-    timeline.fromTo('.scene-5 .chart-chase', { opacity: 0, strokeDashoffset: 1.12 }, { opacity: 0.92, strokeDashoffset: 0.02, duration: 0.62, ease: 'power2.out' }, f(528));
+    timeline.to(chartState, { lineOffset: 0, duration: 0.92, ease: 'power3.inOut', onUpdate: updateChartLine }, f(522));
+    timeline.to(chartState, { chaseOffset: 0, duration: 0.62, ease: 'power2.out', onUpdate: updateChartChase }, f(528));
+    timeline.to('.scene-5 .chart-chase', { opacity: 0.92, duration: 0.08, ease: 'power2.out' }, f(528));
     timeline.to('.scene-5 .chart-chase', { opacity: 0, duration: 0.24, ease: 'power2.out' }, f(547));
+    timeline.to('.scene-5 .chart-shadow', { opacity: 1, duration: 0.28, ease: 'power2.out' }, f(548));
     timeline.from('.scene-5 .headline .mask-line > span', { opacity: 0, y: 108, duration: 0.68, stagger: 0.08, ease: 'power4.out' }, f(520));
     timeline.from('.scene-5 .subcopy', { opacity: 0, y: 22, duration: 0.45, ease: 'power3.out' }, f(540));
     timeline.from('.scene-5 .chart-dot', { opacity: 0, x: -58, y: 38, scale: 0.2, duration: 0.38, ease: 'back.out(2)' }, f(548));
