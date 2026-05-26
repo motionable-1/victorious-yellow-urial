@@ -576,6 +576,23 @@
     .playhead { position: absolute; top: 72px; bottom: 18px; left: 44%; width: 3px; border-radius: 3px; background: var(--mint); box-shadow: 0 0 28px rgba(5,223,114,0.86); }
 
     .scene-5 .chart-bg { position: absolute; inset: 0; }
+    .chart-line,
+    .chart-shadow {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 0;
+      will-change: stroke-dashoffset, opacity, transform;
+    }
+    .chart-chase {
+      stroke-dasharray: 0.08 1;
+      stroke-dashoffset: 0;
+      will-change: stroke-dashoffset, opacity;
+    }
+    .chart-dot,
+    .chart-ring {
+      transform-box: fill-box;
+      transform-origin: center;
+      will-change: transform, opacity;
+    }
     .scene-5 .dot-field {
       position: absolute;
       left: 240px;
@@ -752,8 +769,11 @@
           <filter id="chartGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <linearGradient id="chartGrad" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#05df72" stop-opacity="0.08"/><stop offset="0.55" stop-color="#05df72"/><stop offset="1" stop-color="#8dffbf"/></linearGradient>
         </defs>
-        <path d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="url(#chartGrad)" stroke-width="12" stroke-linecap="round" filter="url(#chartGlow)"/>
-        <circle cx="1744" cy="224" r="20" fill="#05df72" filter="url(#chartGlow)"/>
+        <path class="chart-shadow" pathLength="1" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="#05df72" stroke-opacity="0.16" stroke-width="30" stroke-linecap="round" filter="url(#chartGlow)"/>
+        <path class="chart-line" pathLength="1" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="url(#chartGrad)" stroke-width="12" stroke-linecap="round" filter="url(#chartGlow)"/>
+        <path class="chart-chase" pathLength="1" d="M180 878 C420 820 560 845 738 755 C905 670 998 744 1156 610 C1326 466 1430 394 1744 224" fill="none" stroke="#eafff1" stroke-opacity="0.9" stroke-width="7" stroke-linecap="round"/>
+        <circle class="chart-ring" cx="1744" cy="224" r="32" fill="none" stroke="#8dffbf" stroke-width="5" filter="url(#chartGlow)"/>
+        <circle class="chart-dot" cx="1744" cy="224" r="20" fill="#05df72" filter="url(#chartGlow)"/>
       </svg>
       <div class="content">
         <h2 class="headline"><span class="mask-line"><span>Your ideas deserve</span></span><span class="mask-line"><span class="mint">more views</span></span></h2>
@@ -838,9 +858,15 @@
 
     timeline.to('#scene-5', { opacity: 1, duration: 4.2, ease: 'power1.out' }, f(510));
     timeline.from('.scene-5 .dot-field', { opacity: 0, y: 30, duration: 0.68, ease: 'power3.out' }, f(512));
-    timeline.from('.scene-5 .chart-bg', { opacity: 0, scaleX: 0.2, duration: 1.08, ease: 'power3.inOut' }, f(522));
+    timeline.from('.scene-5 .chart-bg', { opacity: 0, duration: 0.32, ease: 'power3.out' }, f(518));
+    timeline.from('.scene-5 .chart-line, .scene-5 .chart-shadow', { strokeDashoffset: 1, duration: 0.92, ease: 'power3.inOut' }, f(522));
+    timeline.fromTo('.scene-5 .chart-chase', { opacity: 0, strokeDashoffset: 1.12 }, { opacity: 0.92, strokeDashoffset: 0.02, duration: 0.62, ease: 'power2.out' }, f(528));
+    timeline.to('.scene-5 .chart-chase', { opacity: 0, duration: 0.24, ease: 'power2.out' }, f(547));
     timeline.from('.scene-5 .headline .mask-line > span', { opacity: 0, y: 108, duration: 0.68, stagger: 0.08, ease: 'power4.out' }, f(520));
     timeline.from('.scene-5 .subcopy', { opacity: 0, y: 22, duration: 0.45, ease: 'power3.out' }, f(540));
+    timeline.from('.scene-5 .chart-dot', { opacity: 0, x: -58, y: 38, scale: 0.2, duration: 0.38, ease: 'back.out(2)' }, f(548));
+    timeline.from('.scene-5 .chart-ring', { opacity: 0, scale: 0.2, duration: 0.52, ease: 'back.out(2.1)' }, f(548));
+    timeline.to('.scene-5 .chart-ring', { opacity: 0, scale: 1.7, duration: 0.48, ease: 'power2.out' }, f(560));
     timeline.from('.scene-5 .button-mint', { opacity: 0, y: 24, scale: 0.82, duration: 0.55, ease: 'back.out(1.7)' }, f(558));
     timeline.from('.scene-5 .bottom-logo', { opacity: 0, y: 26, duration: 0.5, ease: 'power3.out' }, f(568));
     timeline.to('.scene-5 .button-mint', { scale: 1.035, duration: 0.8, yoyo: true, repeat: 1, ease: 'sine.inOut' }, f(586));
